@@ -65,6 +65,7 @@ var yamlGroups = []byte(`
 
 
 `)
+
 func TestLoadGroup(t *testing.T) {
 	groups, err := LoadGroups(yamlGroups)
 	if err != nil {

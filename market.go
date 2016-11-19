@@ -5,13 +5,13 @@ import (
 )
 
 type GroupId struct {
-	Anchorable bool `yaml:"anchorable"`
-	Anchored bool `yaml:"anchored"`
-	CategoryId int `yaml:"categoryID"`
-	FittableNonSingleton bool `yaml:"fittableNonSingleton"`
-	Name map[string]string `yaml:"name"`
-	Published bool `yaml:"published"`
-	UseBasePrice bool `yaml:"useBasePrice"`
+	Anchorable           bool              `yaml:"anchorable"`
+	Anchored             bool              `yaml:"anchored"`
+	CategoryId           int               `yaml:"categoryID"`
+	FittableNonSingleton bool              `yaml:"fittableNonSingleton"`
+	Name                 map[string]string `yaml:"name"`
+	Published            bool              `yaml:"published"`
+	UseBasePrice         bool              `yaml:"useBasePrice"`
 }
 
 type Groups map[int]GroupId
