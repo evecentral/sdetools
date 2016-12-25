@@ -1,27 +1,19 @@
 package sdetools
 
 import (
-	"encoding/gob"
-	"encoding/json"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/boltdb/bolt"
-	"github.com/evecentral/sdetools/convert"
+	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
 const nameBucket = "invUniqueNames"
 
 type UniqueName struct {
-	Id      int         `json:"itemID"`
-	Name    interface{} `json:"itemName"`
-	GroupId int         `json:"groupID"`
-}
-
-func init() {
-	var u UniqueName
-	gob.Register(&u)
+	Id      int         `yaml:"itemID"`
+	Name    interface{} `yaml:"itemName"`
+	GroupId int         `yaml:"groupID"`
 }
 
 type UniqueNames []*UniqueName
@@ -30,21 +22,10 @@ type UniqueNames []*UniqueName
 // Generates the JSON object if required
 func (s *SDE) loadNames() error {
 
-	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml.json")
-
-	if _, err := os.Stat(path); err != nil {
-		oldPath := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml")
-		convert.ConvertDatafile(oldPath, path)
-	}
-
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
+	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml")
 	var uniqueNames UniqueNames
-	err = json.NewDecoder(file).Decode(&uniqueNames)
+	err := LoadYamlFile(path, &uniqueNames)
+
 	if err != nil {
 		return err
 	}
@@ -53,7 +34,13 @@ func (s *SDE) loadNames() error {
 		s.db.Update(func(tx *bolt.Tx) error {
 			key := boltKey(name.Id)
 			b := tx.Bucket([]byte(nameBucket))
-			err := b.Put(key, gobToBytes(name))
+			data, err := msgpack.Marshal(name)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			err = b.Put(key, data)
 			if err != nil {
 				log.Println(err)
 				return err
@@ -66,5 +53,20 @@ func (s *SDE) loadNames() error {
 }
 
 func (s *SDE) GetSystemNameById(system int) (string, bool) {
-	return "", false
+	var value string
+	var found bool
+	s.db.View((func(tx *bolt.Tx) error {
+		key := boltKey(system)
+		b := tx.Bucket([]byte(nameBucket))
+		v := b.Get(key)
+		if v == nil {
+			return nil
+		}
+		var uniqueName UniqueName
+		msgpack.Unmarshal(v, &uniqueName)
+		value = uniqueName.Name.(string)
+		found = true
+		return nil
+	}))
+	return value, found
 }

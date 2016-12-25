@@ -1,8 +1,14 @@
-hash: 10a6213450c12cf78da5841c240dd7a6d0d20d83e2016500f837624b3c2ead61
-updated: 2016-12-25T05:01:25.71408719Z
+hash: 33980cfa275c75dbf8086bfe819af8a0c72aa3674882ae1d14d3f69f01e8d041
+updated: 2016-12-25T07:36:04.009822814Z
 imports:
 - name: github.com/boltdb/bolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
+- name: golang.org/x/sys
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  subpackages:
+  - unix
+- name: gopkg.in/vmihailenco/msgpack.v2
+  version: 94af6ea04d2da6a09d6914ca79b8fb94f3acbba4
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports: []

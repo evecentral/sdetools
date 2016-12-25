@@ -8,6 +8,7 @@ import (
 )
 
 var sdepath = flag.String("sde", "sde", "Path to the SDE root")
+var conv = flag.Bool("convert", false, "Convert to BoltDB")
 
 // Build a BoltDB of all of the relevant SDE items
 func main() {
@@ -17,7 +18,9 @@ func main() {
 		BaseDir: *sdepath,
 	}
 	sde.Init()
-	sde.BuildBoltDB()
+	if *conv {
+		sde.BuildBoltDB()
+	}
 
 	names, ok := sde.GetSystemNameById(30000142)
 	if ok != true {

@@ -40,5 +40,15 @@ func (s *SDE) BuildBoltDB() {
 
 	})
 	s.loadNames()
+	s.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucket([]byte(groupBucket))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+
+	})
+	s.loadGroups()
+
 
 }

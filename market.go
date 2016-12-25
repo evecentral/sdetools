@@ -1,48 +1,74 @@
 package sdetools
 
 import (
-	"encoding/json"
 	"log"
-	"os"
 	"path/filepath"
+
+	"github.com/boltdb/bolt"
+	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
 type Group struct {
-	Anchorable           bool              `json:"anchorable"`
-	Anchored             bool              `json:"anchored"`
-	CategoryId           int               `json:"categoryID"`
-	FittableNonSingleton bool              `json:"fittableNonSingleton"`
-	Name                 map[string]string `json:"name"`
-	Published            bool              `json:"published"`
-	UseBasePrice         bool              `json:"useBasePrice"`
+	Anchorable           bool              `yaml:"anchorable"`
+	Anchored             bool              `yaml:"anchored"`
+	CategoryId           int               `yaml:"categoryID"`
+	FittableNonSingleton bool              `yaml:"fittableNonSingleton"`
+	Name                 map[string]string `yaml:"name"`
+	Published            bool              `yaml:"published"`
+	UseBasePrice         bool              `yaml:"useBasePrice"`
 }
 
-type Groups map[int]Group
+type Groups map[int64]Group
 
-func (s *SDE) loadGroupsJson() error {
-	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml.json")
+const (
+	groupBucket = "groupIDs"
+)
 
-	file, err := os.Open(path)
+func (s *SDE) loadGroups() error {
+	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml")
+	var groups Groups
+	err := LoadYamlFile(path, &groups)
+
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
-	err = json.NewDecoder(file).Decode(&s.groups)
-	if err != nil {
-		return err
-	}
+	for groupId, group := range groups {
+		s.db.Update(func(tx *bolt.Tx) error {
+			key := boltKey(int(groupId))
+			bucket := tx.Bucket([]byte(groupBucket))
+			data, err := msgpack.Marshal(group)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
 
-	s.loadedGroups = true
+			err = bucket.Put(key, data)
+			if err != nil {
+				log.Println(err)
+			}
+			return err
+		})
+	}
 	return nil
 }
 
-func (s *SDE) GetGroupById(group int) (Group, bool) {
-	if s.loadedGroups != true {
-		err := s.loadGroupsJson()
-		if err != nil {
-			log.Fatal(err)
+func (s *SDE) GetGroupById(groupid int) (group *Group,found bool) {
+	s.db.View(func(tx *bolt.Tx) error {
+		key := boltKey(int(groupid))
+		b := tx.Bucket([]byte(groupBucket))
+		v := b.Get(key)
+		if v == nil {
+			return nil
 		}
-	}
-	g, ok := s.groups[group]
-	return g, ok
+		found = true
+		err := msgpack.Unmarshal(v, &group)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		return nil
+	})
+	return
 }
