@@ -1,26 +1,48 @@
 package sdetools
 
 import (
-	"gopkg.in/yaml.v2"
+	"encoding/json"
+	"log"
+	"os"
+	"path/filepath"
 )
 
-type GroupId struct {
-	Anchorable           bool              `yaml:"anchorable"`
-	Anchored             bool              `yaml:"anchored"`
-	CategoryId           int               `yaml:"categoryID"`
-	FittableNonSingleton bool              `yaml:"fittableNonSingleton"`
-	Name                 map[string]string `yaml:"name"`
-	Published            bool              `yaml:"published"`
-	UseBasePrice         bool              `yaml:"useBasePrice"`
+type Group struct {
+	Anchorable           bool              `json:"anchorable"`
+	Anchored             bool              `json:"anchored"`
+	CategoryId           int               `json:"categoryID"`
+	FittableNonSingleton bool              `json:"fittableNonSingleton"`
+	Name                 map[string]string `json:"name"`
+	Published            bool              `json:"published"`
+	UseBasePrice         bool              `json:"useBasePrice"`
 }
 
-type Groups map[int]GroupId
+type Groups map[int]Group
 
-func LoadGroups(data []byte) (*Groups, error) {
-	var group Groups
-	err := yaml.Unmarshal(data, &group)
+func (s *SDE) loadGroups() error {
+	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml.json")
+
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &group, nil
+
+	err = json.NewDecoder(file).Decode(&s.groups)
+	if err != nil {
+		return err
+	}
+
+	s.loadedGroups = true
+	return nil
+}
+
+func (s *SDE) GetGroupById(group int) (Group, bool) {
+	if s.loadedGroups != true {
+		err := s.loadGroups()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	g, ok := s.groups[group]
+	return g, ok
 }

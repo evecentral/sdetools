@@ -1,29 +1,30 @@
 package sdetools
 
 import (
-	"io/ioutil"
+	"encoding/json"
+	"log"
+	"os"
 	"path/filepath"
-
-	"gopkg.in/yaml.v2"
 )
 
 type UniqueName struct {
-	Id      int    `yaml:"itemID"`
-	Name    string `yaml:"itemName"`
-	GroupId int64  `yaml:"groupID"`
+	Id      int         `json:"itemID"`
+	Name    interface{} `json:"itemName"`
+	GroupId int         `json:"groupID"`
 }
 
 type UniqueNames []*UniqueName
 
 func (s *SDE) loadNames() error {
-	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml")
-	data, err := ioutil.ReadFile(path)
+	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml.json")
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	var uniqueNames UniqueNames
-	err = yaml.Unmarshal(data, &uniqueNames)
+	err = json.NewDecoder(file).Decode(&uniqueNames)
 	if err != nil {
 		return err
 	}
@@ -32,7 +33,7 @@ func (s *SDE) loadNames() error {
 
 	for _, name := range uniqueNames {
 		if name.GroupId == 5 {
-			s.systemNamesById[name.Id] = name.Name
+			s.systemNamesById[name.Id] = name.Name.(string)
 		}
 	}
 
@@ -43,7 +44,10 @@ func (s *SDE) loadNames() error {
 
 func (s *SDE) GetSystemNameById(system int) (string, bool) {
 	if s.loadedNames == false {
-		s.loadNames()
+		err := s.loadNames()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	r, ok := s.systemNamesById[system]
 	return r, ok

@@ -5,4 +5,7 @@ type SDE struct {
 
 	loadedNames     bool
 	systemNamesById map[int]string
+
+	loadedGroups bool
+	groups       Groups
 }

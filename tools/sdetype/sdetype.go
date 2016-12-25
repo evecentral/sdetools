@@ -3,10 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"runtime"
-	"runtime/pprof"
-	"time"
 
 	"github.com/evecentral/sdetools"
 )
@@ -26,15 +22,10 @@ func main() {
 		return
 	}
 	fmt.Println(names)
-	runtime.GC()
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	fmt.Println(m)
-	f, err := os.Create("memp")
-	if err != nil {
+	groups, ok := sde.GetGroupById(8)
+	if ok != true {
+		fmt.Printf("can't load groups\n")
 		return
 	}
-	pprof.WriteHeapProfile(f)
-	f.Close()
-	time.Sleep(60 * time.Second)
+	fmt.Println(groups)
 }
