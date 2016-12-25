@@ -1,3 +1,4 @@
 package: github.com/evecentral/sdetools
 import:
 - package: gopkg.in/yaml.v2
+- package: github.com/smallfish/simpleyaml

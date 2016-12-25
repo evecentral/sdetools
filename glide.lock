@@ -1,6 +1,8 @@
-hash: ad0f508f5353db335f18a5d40595a98822cb35f50939b60011faf2c5dd748a6d
-updated: 2016-11-17T03:29:57.304485834Z
+hash: 57900380e61e843d33499c593ef519571874cc6c3f55355451c580045f58940e
+updated: 2016-12-25T00:36:58.526461093Z
 imports:
+- name: github.com/smallfish/simpleyaml
+  version: f8280fef35a3fd1d4cf13c5a9fa638398eebb6ad
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports: []
