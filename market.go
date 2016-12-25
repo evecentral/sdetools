@@ -54,7 +54,7 @@ func (s *SDE) loadGroups() error {
 	return nil
 }
 
-func (s *SDE) GetGroupById(groupid int) (group *Group,found bool) {
+func (s *SDE) GetGroupById(groupid int) (group *Group, found bool) {
 	s.db.View(func(tx *bolt.Tx) error {
 		key := boltKey(int(groupid))
 		b := tx.Bucket([]byte(groupBucket))

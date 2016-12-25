@@ -50,5 +50,4 @@ func (s *SDE) BuildBoltDB() {
 	})
 	s.loadGroups()
 
-
 }

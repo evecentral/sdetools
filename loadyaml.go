@@ -2,9 +2,9 @@ package sdetools
 
 import (
 	"io/ioutil"
+
 	"gopkg.in/yaml.v2"
 )
-
 
 func LoadYamlFile(path string, to interface{}) error {
 	data, err := ioutil.ReadFile(path)
