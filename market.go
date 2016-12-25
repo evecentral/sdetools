@@ -19,7 +19,7 @@ type Group struct {
 
 type Groups map[int]Group
 
-func (s *SDE) loadGroups() error {
+func (s *SDE) loadGroupsJson() error {
 	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml.json")
 
 	file, err := os.Open(path)
@@ -38,7 +38,7 @@ func (s *SDE) loadGroups() error {
 
 func (s *SDE) GetGroupById(group int) (Group, bool) {
 	if s.loadedGroups != true {
-		err := s.loadGroups()
+		err := s.loadGroupsJson()
 		if err != nil {
 			log.Fatal(err)
 		}

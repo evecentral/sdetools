@@ -1,11 +1,17 @@
 package sdetools
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/boltdb/bolt"
+	"github.com/evecentral/sdetools/convert"
 )
+
+const nameBucket = "invUniqueNames"
 
 type UniqueName struct {
 	Id      int         `json:"itemID"`
@@ -13,10 +19,24 @@ type UniqueName struct {
 	GroupId int         `json:"groupID"`
 }
 
+func init() {
+	var u UniqueName
+	gob.Register(&u)
+}
+
 type UniqueNames []*UniqueName
 
+// Load unique names into the BoltDB cluster from the JSON file
+// Generates the JSON object if required
 func (s *SDE) loadNames() error {
+
 	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml.json")
+
+	if _, err := os.Stat(path); err != nil {
+		oldPath := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml")
+		convert.ConvertDatafile(oldPath, path)
+	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -29,26 +49,22 @@ func (s *SDE) loadNames() error {
 		return err
 	}
 
-	s.systemNamesById = make(map[int]string)
-
 	for _, name := range uniqueNames {
-		if name.GroupId == 5 {
-			s.systemNamesById[name.Id] = name.Name.(string)
-		}
+		s.db.Update(func(tx *bolt.Tx) error {
+			key := boltKey(name.Id)
+			b := tx.Bucket([]byte(nameBucket))
+			err := b.Put(key, gobToBytes(name))
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			return nil
+		})
 	}
-
-	s.loadedNames = true
 
 	return nil
 }
 
 func (s *SDE) GetSystemNameById(system int) (string, bool) {
-	if s.loadedNames == false {
-		err := s.loadNames()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	r, ok := s.systemNamesById[system]
-	return r, ok
+	return "", false
 }
