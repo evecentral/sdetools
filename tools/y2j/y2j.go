@@ -62,11 +62,12 @@ func visit(path string, f os.FileInfo, err error) error {
 		return nil
 	}
 
-	if !strings.HasSuffix(path, ".yaml") {
+	if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".staticdata") {
 		return nil
 	}
 
-	fmt.Printf("Visited: %s\n", path)
+	newPath := fmt.Sprintf("%s.%s", path, "json")
+	fmt.Printf("%s ->  %s", path, newPath)
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -84,7 +85,7 @@ func visit(path string, f os.FileInfo, err error) error {
 		return err
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s.%s", path, "json"))
+	file, err := os.Create(newPath)
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func visit(path string, f os.FileInfo, err error) error {
 		return err
 	}
 
-	fmt.Println("converted")
+	fmt.Printf(" [done]\n")
 	return nil
 }
 
