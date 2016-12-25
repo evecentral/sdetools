@@ -20,9 +20,68 @@ type Group struct {
 
 type Groups map[int64]Group
 
+type MarketType struct {
+	GroupId       int               `yaml:"groupID"`
+	MarketGroupId int               `yaml:"margetGroupID"`
+	Name          map[string]string `yaml:"name"`
+	Published     bool              `yaml:"published"`
+	Description   map[string]string `yaml:"description"`
+	Volume        float64           `yaml:"volume"`
+	Mass          float64           `yaml:"mass"`
+}
+
+type MarketTypes map[int64]MarketType
+
 const (
-	groupBucket = "groupIDs"
+	groupBucket          = "groupIDs"
+	marketTypeBucket     = "marketTypes"
+	marketTypeNameBucket = "marketTypesName"
 )
+
+func (s *SDE) loadMarketTypes() error {
+	path := filepath.Join(s.BaseDir, "fsd/typeIDs.yaml")
+	var types MarketTypes
+	err := LoadYamlFile(path, &types)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	for typeid, mt := range types {
+		s.db.Update(func(tx *bolt.Tx) error {
+			key := boltKey(int(typeid))
+			bucket := tx.Bucket([]byte(marketTypeBucket))
+			data, err := msgpack.Marshal(mt)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			err = bucket.Put(key, data)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			key = []byte(mt.Name["en"])
+			bucket = tx.Bucket([]byte(marketTypeNameBucket))
+			data, err = msgpack.Marshal(mt)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			err = bucket.Put(key, data)
+			if err != nil {
+				log.Println(err)
+			}
+			return err
+
+			return err
+
+		})
+	}
+	return nil
+}
 
 func (s *SDE) loadGroups() error {
 	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml")

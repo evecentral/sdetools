@@ -49,5 +49,18 @@ func (s *SDE) BuildBoltDB() {
 
 	})
 	s.loadGroups()
+	s.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucket([]byte(marketTypeBucket))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		_, err = tx.CreateBucket([]byte(marketTypeNameBucket))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
 
+		return nil
+
+	})
+	s.loadMarketTypes()
 }
