@@ -34,4 +34,18 @@ func main() {
 		return
 	}
 	fmt.Println(groups)
+
+	mt, ok := sde.GetTypeById(34)
+	if ok != true {
+		fmt.Printf("can't load typeids\n")
+		return
+	}
+	fmt.Println(mt)
+	mt, ok = sde.GetTypeByExactName("Zealot")
+	if ok != true {
+		fmt.Printf("can't load typeids\n")
+		return
+	}
+	fmt.Println(mt)
+
 }

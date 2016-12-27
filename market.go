@@ -131,3 +131,43 @@ func (s *SDE) GetGroupById(groupid int) (group *Group, found bool) {
 	})
 	return
 }
+
+func (s* SDE) GetTypeById(typeid int) (mt *MarketType, found bool) {
+	s.db.View(func(tx *bolt.Tx) error {
+		key := boltKey(int(typeid))
+		b := tx.Bucket([]byte(marketTypeBucket))
+		v := b.Get(key)
+		if v == nil {
+			return nil
+		}
+
+		err := msgpack.Unmarshal(v, &mt)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		found = true
+		return nil
+	})
+	return
+}
+
+func (s *SDE) GetTypeByExactName(name string) (mt *MarketType, found bool) {
+	s.db.View(func(tx *bolt.Tx) error {
+		key := []byte(name)
+		b := tx.Bucket([]byte(marketTypeNameBucket))
+		v := b.Get(key)
+		if v == nil {
+			return nil
+		}
+
+		err := msgpack.Unmarshal(v, &mt)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		found = true
+		return nil
+	})
+	return
+}
