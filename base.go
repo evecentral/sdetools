@@ -40,6 +40,7 @@ func (s *SDE) BuildBoltDB() {
 
 	})
 	s.loadNames()
+
 	s.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(groupBucket))
 		if err != nil {
@@ -49,6 +50,14 @@ func (s *SDE) BuildBoltDB() {
 
 	})
 	s.loadGroups()
+
+	s.db.Update(func(tx *bolt.Tx) error {
+		_, _ = tx.CreateBucket([]byte(solarSystemNamesBucket))
+		_, _ = tx.CreateBucket([]byte(solarSystemIdsBucket))
+		return nil
+	})
+	s.loadUniverse()
+
 	s.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(marketTypeBucket))
 		if err != nil {

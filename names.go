@@ -22,6 +22,9 @@ type UniqueNames []*UniqueName
 // Generates the JSON object if required
 func (s *SDE) loadNames() error {
 
+	log.Println("loading names...")
+	defer log.Println("end loading names")
+
 	path := filepath.Join(s.BaseDir, "bsd/invUniqueNames.yaml")
 	var uniqueNames UniqueNames
 	err := LoadYamlFile(path, &uniqueNames)
@@ -29,6 +32,8 @@ func (s *SDE) loadNames() error {
 	if err != nil {
 		return err
 	}
+
+	log.Println("yaml loaded...")
 
 	for _, name := range uniqueNames {
 		s.db.Update(func(tx *bolt.Tx) error {
@@ -55,7 +60,8 @@ func (s *SDE) loadNames() error {
 func (s *SDE) GetSystemNameById(system int) (string, bool) {
 	var value string
 	var found bool
-	s.db.View((func(tx *bolt.Tx) error {
+
+	s.db.View(func(tx *bolt.Tx) error {
 		key := boltKey(system)
 		b := tx.Bucket([]byte(nameBucket))
 		v := b.Get(key)
@@ -67,6 +73,6 @@ func (s *SDE) GetSystemNameById(system int) (string, bool) {
 		value = uniqueName.Name.(string)
 		found = true
 		return nil
-	}))
+	})
 	return value, found
 }
