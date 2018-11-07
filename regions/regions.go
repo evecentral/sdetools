@@ -1,4 +1,4 @@
-package sdetools
+package regions
 
 import (
 	"strconv"

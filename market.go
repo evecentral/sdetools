@@ -36,9 +36,14 @@ const (
 	groupBucket          = "groupIDs"
 	marketTypeBucket     = "marketTypes"
 	marketTypeNameBucket = "marketTypesName"
+
+	solarSystemNamesBucket = "solarSystemNames"
+	solarSystemIdsBucket   = "solarSystemIds"
 )
 
 func (s *SDE) loadMarketTypes() error {
+	log.Println("loading marketing types...")
+	defer log.Println("done loading market types")
 	path := filepath.Join(s.BaseDir, "fsd/typeIDs.yaml")
 	var types MarketTypes
 	err := LoadYamlFile(path, &types)
@@ -75,15 +80,15 @@ func (s *SDE) loadMarketTypes() error {
 				log.Println(err)
 			}
 			return err
-
-			return err
-
 		})
 	}
 	return nil
 }
 
 func (s *SDE) loadGroups() error {
+	log.Println("loading groups...")
+	defer log.Println("done loading groups")
+
 	path := filepath.Join(s.BaseDir, "fsd/groupIDs.yaml")
 	var groups Groups
 	err := LoadYamlFile(path, &groups)
@@ -132,7 +137,7 @@ func (s *SDE) GetGroupById(groupid int) (group *Group, found bool) {
 	return
 }
 
-func (s* SDE) GetTypeById(typeid int) (mt *MarketType, found bool) {
+func (s *SDE) GetTypeById(typeid int) (mt *MarketType, found bool) {
 	s.db.View(func(tx *bolt.Tx) error {
 		key := boltKey(int(typeid))
 		b := tx.Bucket([]byte(marketTypeBucket))
